@@ -1,5 +1,6 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 #from django.core.mail import send_mail
+from django.core.mail import send_mail
 from django.db import models
 
 
@@ -51,4 +52,12 @@ class User(AbstractBaseUser):
     def has_perm(self, perm, obj=None):
         return self.is_staff
 
-
+    @staticmethod
+    def send_activation_mail(email, activation_code):
+        message = f'Спасибо за регистрацию. \nКод для активации Вашего аккаунта: {activation_code}'
+        send_mail(
+            'Активация аккаунта',
+            message,
+            'test@gmail.com',
+            [email, ]
+        )
