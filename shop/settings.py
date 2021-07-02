@@ -25,7 +25,7 @@ SECRET_KEY = 'f)dm1_cjx#+fz^i4t)rt)2^(5x9u_(3yx+%t%^4u5fa*!f!rtl'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     'rest_framework.authtoken',
+
+    'drf_yasg',
     #MY APPS
     'account',
     'main',
@@ -143,4 +145,7 @@ EMAIL_HOST_PASSWORD = 'nurai2001.'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+            'rest_framework.authentication.TokenAuthentication',
+        ]
 }

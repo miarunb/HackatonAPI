@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Category, Product, Review
+from .models import Category, Product, Review, Favorite
 
 User = get_user_model()
 
@@ -71,3 +71,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['author'] = ReviewAuthorSerializer(instance.author).data
         return rep
+
+
+class FavoriteListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['product'] = ProductDetailsSerializer(Product.objects.filter(favorites=instance.id),
+                                                             many=True, context=self.context).data
+        return representation

@@ -60,11 +60,9 @@ class LoginSerializer(serializers.Serializer):
 
         if email and password:
             user = authenticate(username=email, password=password, request=self.context.get('request'))
-            #user = User.objects.filter(email=email).first()
             if not user:
                 raise serializers.ValidationError('Неверно указан email или пароль')
-            #if not user.check_password(password):
-                #raise serializers.ValidationError('Неверный пароль')
+
         else:
             raise serializers.ValidationError('Email и пароль обязательны')
         attrs['user'] = user
@@ -134,3 +132,9 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError('Неверное подтверждение ')
         return attrs
 
+    def set_new_password(self):
+        request = self.context.get('request')
+        new_pass = self.validated_data.get('new_pass')
+        user = request.user
+        user.set_password(new_pass)
+        user.save()

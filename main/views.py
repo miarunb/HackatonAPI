@@ -3,13 +3,15 @@ from django_filters import rest_framework as filters
 from rest_framework.decorators import api_view, action
 from rest_framework.filters import OrderingFilter
 from rest_framework import viewsets, mixins, status
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import ProductFilter
-from .models import Product, Category, WishList, Review
+from .models import Product, Category, WishList, Review, Favorite
 from .permissions import IsAuthorOrAdminPermission
-from .serializers import (ProductListSerializer, ProductDetailsSerializer, CategorySerializer, ReviewSerializer)
+from .serializers import (ProductListSerializer, ProductDetailsSerializer, CategorySerializer, ReviewSerializer,
+                          FavoriteListSerializer)
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -38,18 +40,18 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer = ProductListSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['post'])
     def create_review(self, request, pk):
         data = request.data.copy()
         data['product'] = pk
         serializer = ReviewSerializer(data=data, context={'request': request})
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=201)
         else:
             return Response(serializer.errors, status=400)
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['post'])
     def like(self, request, pk):
         product = self.get_object()
         user = request.user
@@ -75,3 +77,17 @@ class ReviewViewSet(mixins.CreateModelMixin,
         if self.action == 'create':
             return [IsAuthenticated()]
         return [IsAuthorOrAdminPermission()]
+
+
+class Favorites(ListAPIView):
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteListSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
+
+    def  get_serializer_context(self):
+        return {'request': self.request}
