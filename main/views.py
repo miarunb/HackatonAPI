@@ -8,10 +8,10 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import ProductFilter
-from .models import Product, Category, WishList, Review, Favorite
+from .models import Product, Category, WishList, Review, Favorite, Cart
 from .permissions import IsAuthorOrAdminPermission
 from .serializers import (ProductListSerializer, ProductDetailsSerializer, CategorySerializer, ReviewSerializer,
-                          FavoriteListSerializer)
+                          FavoriteListSerializer, CartListSerializer)
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -48,8 +48,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=201)
-        else:
-            return Response(serializer.errors, status=400)
+
 
     @action(detail=True, methods=['post'])
     def like(self, request, pk):
@@ -65,6 +64,33 @@ class ProductViewSet(viewsets.ModelViewSet):
             like_obj.save()
             return Response('liked')
 
+    @action(detail=True, methods=['post'])
+    def add_to_favorite(self, request, pk):
+        product = self.get_object()
+        user = request.user
+        fav, created = Favorite.objects.get_or_create(product=product, user=user)
+        if fav.favorite:
+            fav.favorite = False
+            fav.save
+            return Response('Удален из избранных')
+        else:
+            fav.favorite = True
+            fav.save()
+            return Response('Добавлен в избранные')
+
+    @action(detail=True, methods=['post'])
+    def add_to_cart(self, request, pk):
+        product = self.get_object()
+        user = request.user
+        in_cart, created = Cart.objects.get_or_create(product=product, user=user)
+        if in_cart.to_cart:
+            in_cart.to_cart = False
+            in_cart.save
+            return Response('Удален из корзины')
+        else:
+            in_cart.to_cart = True
+            in_cart.save()
+            return Response('Добавлен в корзину')
 
 class ReviewViewSet(mixins.CreateModelMixin,
                     mixins.UpdateModelMixin,
@@ -82,6 +108,20 @@ class ReviewViewSet(mixins.CreateModelMixin,
 class Favorites(ListAPIView):
     queryset = Favorite.objects.all()
     serializer_class = FavoriteListSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
+
+    def  get_serializer_context(self):
+        return {'request': self.request}
+
+
+class CartView(ListAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartListSerializer
     permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):

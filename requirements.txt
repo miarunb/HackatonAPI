@@ -5,3 +5,6 @@ Pillow==7.1
 python-decouple
 django-filter
 drf-yasg
+lxml
+BeautifulSoup4
+requests

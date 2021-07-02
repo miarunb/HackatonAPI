@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Category, Product, Review, Favorite
+from .models import Category, Product, Review, Favorite, Cart
 
 User = get_user_model()
 
@@ -83,3 +83,14 @@ class FavoriteListSerializer(serializers.ModelSerializer):
         representation['product'] = ProductDetailsSerializer(Product.objects.filter(favorites=instance.id),
                                                              many=True, context=self.context).data
         return representation
+
+class CartListSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Cart
+            fields = '__all__'
+
+        def to_representation(self, instance):
+            representation = super().to_representation(instance)
+            representation['product'] = ProductDetailsSerializer(Product.objects.filter(cart=instance.id),
+                                                                 many=True, context=self.context).data
+            return representation

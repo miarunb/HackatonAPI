@@ -23,6 +23,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from main.views import ProductViewSet, ReviewViewSet, Favorite  #OrderViewSet
+from shop.views import news_view
 
 router = SimpleRouter()
 router.register('products', ProductViewSet)
@@ -44,4 +45,5 @@ urlpatterns = [
     path('api/v1/', include(router.urls)),
     path('api/v1/', include('account.urls')),
     path('api/v1/docs/', schema_view.with_ui('swagger')),
+    path('api/v1/news/', news_view)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
